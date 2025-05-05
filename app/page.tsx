@@ -7,7 +7,7 @@ import { useSession, signIn, signOut } from 'next-auth/react'; // Import useSess
 import { useRouter } from 'next/navigation'; // Import for potential redirects if needed, though useSession handles basic cases
 
 export default function Home() {
-  const { data: session, status } = useSession(); // Get session data and status
+  const { data: _session, status } = useSession(); // Get session data and status
   const router = useRouter();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -114,8 +114,16 @@ export default function Home() {
     if (status === 'authenticated') {
   return (
     <div className="flex flex-col justify-between min-h-screen bg-gray-100 p-8">
-      {/* Date aligned to the left */}
-      <h1 className="text-2xl text-black font-bold mb-4">{currentDate}</h1>
+                 {/* Header with Date and Sign Out Button */}
+      <div className="flex justify-between items-center mb-4">
+                     <h1 className="text-2xl text-black font-bold">{currentDate}</h1>
+                     <button
+                         onClick={() => signOut({ callbackUrl: '/login' })} // Sign out and redirect to login
+                         className="px-4 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                     >
+                         Sign Out
+                     </button>
+                 </div>
 
       {/* Expanded text area */}
         <textarea

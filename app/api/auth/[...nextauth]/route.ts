@@ -14,7 +14,7 @@ export const authOptions = {
                 // Define the fields your login form will have
                 password: { label: "Password", type: "password" },
             },
-            async authorize(credentials, req) {
+            async authorize(credentials, _req) {
                 // --- !!! IMPORTANT SECURITY WARNING !!! ---
                 // This is a VERY basic example for a SINGLE USER personal app.
                 // It checks against a hardcoded password stored in environment variables.
