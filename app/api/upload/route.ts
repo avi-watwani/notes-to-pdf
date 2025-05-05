@@ -27,6 +27,17 @@ export async function POST(request: Request) {
              return NextResponse.json({ message: 'Uploaded data is not a file' }, { status: 400 });
         }
 
+        // Check file type (optional, but good for security)
+        if (!pdfFile.type.startsWith('application/pdf')) {
+            return NextResponse.json({ message: 'Uploaded file is not a PDF' }, { status: 400 });
+        }
+
+        // Check file size (optional, adjust the limit as needed)
+        const maxSizeInBytes = 2 * 1024 * 1024; // 2 MB
+        if (pdfFile.size > maxSizeInBytes) {
+            return NextResponse.json({ message: 'Uploaded file is too large' }, { status: 400 });
+        }
+
         // --- Get File Content ---
         // Convert the File blob into an ArrayBuffer, then into a Buffer the SDK understands
         const fileBuffer = Buffer.from(await pdfFile.arrayBuffer());
