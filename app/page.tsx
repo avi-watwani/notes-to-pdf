@@ -60,9 +60,24 @@ export default function Home() {
       setStatusMessage(`Successfully uploaded: ${result.key}`);
       setTextContent('');
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Save Error:', error);
-      setStatusMessage(`Error: ${error.message}`);
+
+      // Default error message
+      let errorMessage = 'An unknown error occurred during upload.';
+
+      // Check if the error is an instance of Error to safely access message
+      if (error instanceof Error) {
+        errorMessage = `Error: ${error.message}`;
+      } else if (typeof error === 'string') {
+        // Handle cases where a string might have been thrown
+        errorMessage = `Error: ${error}`;
+      } else {
+          // Optionally log the structure if it's something else unexpected
+          console.error("Caught error is not an Error instance:", error);
+      }
+
+      setStatusMessage(errorMessage); // Set the potentially refined error message
     } finally {
       setIsLoading(false);
     }
