@@ -35,7 +35,7 @@ export default function Home() {
     setStatusMessage('Generating PDF...');
 
     try {
-      const pdfBlob = generatePdfBlob(textContent);
+      const pdfBlob = generatePdfBlob(`${currentDate}\n\n${textContent}`);
       setStatusMessage('Uploading PDF...');
 
       console.log('Saving PDF2...');
@@ -85,21 +85,29 @@ export default function Home() {
 
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
+    <div className="flex flex-col justify-between min-h-screen bg-gray-100 p-8">
+      {/* Date aligned to the left */}
       <h1 className="text-2xl font-bold mb-4">{currentDate}</h1>
+
+      {/* Expanded text area */}
       <textarea
         value={textContent}
         onChange={(e) => setTextContent(e.target.value)}
         placeholder="Enter your text here..."
-        className="w-full max-w-md p-4 border rounded-lg shadow-md"
+        className="flex-1 w-full p-4 border rounded-lg shadow-md resize-none text-lg"
       />
-      <button
-        onClick={handleSave} disabled={isLoading}
-        className="mt-4 px-4 py-2 bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-600"
-      >
-        {isLoading ? 'Saving...' : 'Save'}
-      </button>
-      {statusMessage && <p>{statusMessage}</p>}
+
+      {/* Bottom section: Save button and status message */}
+      <div className="flex items-center justify-between mt-4">
+        <button
+          onClick={handleSave}
+          disabled={isLoading}
+          className="px-6 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 disabled:opacity-50"
+        >
+          {isLoading ? 'Saving...' : 'Save'}
+        </button>
+        {statusMessage && <p className="text-sm text-gray-600 ml-4">{statusMessage}</p>}
+      </div>
     </div>
   );
 }
