@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Notes to PDF",
-  description: "Document your thoughts!",
+  title: "Document Your Thoughts",
+  description: "A simple journaling app",
 };
 
 export default function RootLayout({

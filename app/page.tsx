@@ -26,7 +26,6 @@ export default function Home() {
   };
 
   const handleSave = async () => {
-    console.log('Saving PDF...');
     if (!textContent.trim()) {
       setStatusMessage('Text area is empty.');
       return;
@@ -35,10 +34,9 @@ export default function Home() {
     setStatusMessage('Generating PDF...');
 
     try {
-      const pdfBlob = generatePdfBlob(`${currentDate}\n\n${textContent}`);
+      const pdfBlob = generatePdfBlob(`\n${currentDate}\n\n${textContent}`);
       setStatusMessage('Uploading PDF...');
 
-      console.log('Saving PDF2...');
       const formData = new FormData();
       // Use the client-side date for the filename part if desired,
       // but the API route should determine the S3 path based on server date.
@@ -57,7 +55,7 @@ export default function Home() {
         throw new Error(result.message || 'Upload failed');
       }
 
-      setStatusMessage(`Successfully uploaded: ${result.key}`);
+      setStatusMessage("Successfully added today's entry!");
       setTextContent('');
 
     } catch (error: unknown) {
@@ -87,17 +85,17 @@ export default function Home() {
   return (
     <div className="flex flex-col justify-between min-h-screen bg-gray-100 p-8">
       {/* Date aligned to the left */}
-      <h1 className="text-2xl font-bold mb-4">{currentDate}</h1>
+      <h1 className="text-2xl text-black font-bold mb-4">{currentDate}</h1>
 
       {/* Expanded text area */}
-      <textarea
-        value={textContent}
-        onChange={(e) => setTextContent(e.target.value)}
-        placeholder="Enter your text here..."
-        className="flex-1 w-full p-4 border rounded-lg shadow-md resize-none text-lg"
-      />
+        <textarea
+          value={textContent}
+          onChange={(e) => setTextContent(e.target.value)}
+          placeholder="Enter your text here..."
+          className="flex-1 w-full p-4 border rounded-lg shadow-md resize-none text-lg text-black placeholder-gray-500"
+        />
 
-      {/* Button + Status Message aligned to the left */}
+        {/* Button + Status Message aligned to the left */}
       <div className="flex items-center mt-4 space-x-4">
         <button
           onClick={handleSave}
