@@ -3,7 +3,7 @@ import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials"; // We'll start with simple credentials
 
 // Define the authentication options
-export const authOptions = {
+const authOptions = {
     providers: [
         // --- Credentials Provider (Example for Email/Password) ---
         // For a simple journaling app, you might just have one 'user'.
