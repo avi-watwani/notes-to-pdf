@@ -3,12 +3,29 @@
 import { jsPDF } from 'jspdf';
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns'; // if using date-fns
+import { useSession, signIn, signOut } from 'next-auth/react'; // Import useSession, signIn, signOut
+import { useRouter } from 'next/navigation'; // Import for potential redirects if needed, though useSession handles basic cases
 
 export default function Home() {
+  const { data: session, status } = useSession(); // Get session data and status
+  const router = useRouter();
+
   const [isLoading, setIsLoading] = useState(false);
   const [currentDate, setCurrentDate] = useState('');
   const [textContent, setTextContent] = useState('');
   const [statusMessage, setStatusMessage] = useState('');
+
+  // --- Handle Authentication Status ---
+  useEffect(() => {
+    // If the session is definitively not authenticated (and not loading), redirect to login
+    if (status === 'unauthenticated') {
+      // Option 1: Use NextAuth's signIn function which can redirect
+      signIn(); // Redirects to the page defined in authOptions.pages.signIn
+
+      // Option 2: Manual redirect (less common for simple cases)
+      // router.push('/login');
+    }
+  }, [status, router]); // Depend on status and router
 
   useEffect(() => {
     // Format: 05 May 2025
@@ -81,7 +98,20 @@ export default function Home() {
     }
   };
 
+  // --- Conditional Rendering based on Auth Status ---
 
+    // 1. Show loading state while session status is being determined
+    if (status === 'loading') {
+        return (
+            <div className="flex items-center justify-center min-h-screen">
+                <p className="text-lg text-gray-600">Loading session...</p>
+                {/* You could add a spinner here */}
+            </div>
+        );
+    }
+
+        // 2. Render the main content ONLY if authenticated
+    if (status === 'authenticated') {
   return (
     <div className="flex flex-col justify-between min-h-screen bg-gray-100 p-8">
       {/* Date aligned to the left */}
@@ -106,6 +136,14 @@ export default function Home() {
         </button>
         {statusMessage && <p className="text-sm text-gray-700">{statusMessage}</p>}
       </div>
+    </div>
+  );
+}
+
+  // 3. If unauthenticated, show a message or redirect
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      <p className="text-lg text-gray-600">You are not logged in. Please log in to access your journal.</p>
     </div>
   );
 }

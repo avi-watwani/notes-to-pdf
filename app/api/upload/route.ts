@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { format } from 'date-fns';
+import { getServerSession } from "next-auth/next"; // Import server session handler
+import { authOptions } from "@/app/api/auth/[...nextauth]/route"; // Import your auth options
 
 // Initialize S3 client (can be outside the handler)
 const s3Client = new S3Client({
@@ -13,6 +15,13 @@ const s3Client = new S3Client({
 
 // Export the named function for the POST method
 export async function POST(request: Request) {
+        // --- Authentication Check ---
+    const session = await getServerSession(authOptions); // Get session on the server
+    if (!session || !session.user) { // Check if user is logged in (session exists and has user data)
+         console.log("API Upload: Unauthorized access attempt.");
+         return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
+    }
+    
     try {
         const formData = await request.formData();
         const pdfFile = formData.get('pdfFile'); // Use the key you set in the frontend FormData
