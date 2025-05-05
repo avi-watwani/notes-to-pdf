@@ -14,7 +14,10 @@ export const authOptions = {
                 // Define the fields your login form will have
                 password: { label: "Password", type: "password" },
             },
-            async authorize(credentials, _req) {
+            async authorize(credentials,
+                // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                _req
+            ) {
                 // --- !!! IMPORTANT SECURITY WARNING !!! ---
                 // This is a VERY basic example for a SINGLE USER personal app.
                 // It checks against a hardcoded password stored in environment variables.

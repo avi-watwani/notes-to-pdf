@@ -7,7 +7,7 @@ import { useSession, signIn, signOut } from 'next-auth/react'; // Import useSess
 import { useRouter } from 'next/navigation'; // Import for potential redirects if needed, though useSession handles basic cases
 
 export default function Home() {
-  const { data: _session, status } = useSession(); // Get session data and status
+  const { status } = useSession(); // Get session data and status
   const router = useRouter();
 
   const [isLoading, setIsLoading] = useState(false);
