@@ -97,8 +97,8 @@ export default function Home() {
         className="flex-1 w-full p-4 border rounded-lg shadow-md resize-none text-lg"
       />
 
-      {/* Bottom section: Save button and status message */}
-      <div className="flex items-center justify-between mt-4">
+      {/* Button + Status Message aligned to the left */}
+      <div className="flex items-center mt-4 space-x-4">
         <button
           onClick={handleSave}
           disabled={isLoading}
@@ -106,7 +106,7 @@ export default function Home() {
         >
           {isLoading ? 'Saving...' : 'Save'}
         </button>
-        {statusMessage && <p className="text-sm text-gray-600 ml-4">{statusMessage}</p>}
+        {statusMessage && <p className="text-sm text-gray-700">{statusMessage}</p>}
       </div>
     </div>
   );
