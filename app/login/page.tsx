@@ -35,6 +35,7 @@ export default function LoginPage() {
       }
     } catch (err) {
       // Catch any unexpected errors during the fetch/process
+      console.error('Login submission error:', err);
       setError('An unexpected error occurred.');
       setIsLoading(false);
     }
