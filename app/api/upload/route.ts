@@ -50,7 +50,7 @@ export async function POST(request: Request) {
 
     // --- S3 Logic ---
     // Use client-provided date if available and valid, else fallback to server date
-    let clientDate = formData.get('date');
+    const clientDate = formData.get('date');
     let year, month, dayMonthYear;
     if (typeof clientDate === 'string' && /^\d{2} [A-Za-z]+ \d{4}$/.test(clientDate)) {
       // Try to parse the client date string (format: dd MMMM yyyy)
