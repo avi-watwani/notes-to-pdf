@@ -49,11 +49,32 @@ export async function POST(request: Request) {
     const fileBuffer = Buffer.from(await pdfFile.arrayBuffer());
 
     // --- S3 Logic ---
-    // Generate S3 key based on current date on the server
-    const now = new Date();
-    const year = format(now, 'yyyy');
-    const month = format(now, 'MMM'); // e.g., May
-    const dayMonthYear = format(now, 'dd MMM yyyy'); // e.g., 05 May 2025
+    // Use client-provided date if available and valid, else fallback to server date
+    let clientDate = formData.get('date');
+    let year, month, dayMonthYear;
+    if (typeof clientDate === 'string' && /^\d{2} [A-Za-z]+ \d{4}$/.test(clientDate)) {
+      // Try to parse the client date string (format: dd MMMM yyyy)
+      try {
+        // Parse using toLocaleDateString for full month name
+        const [day, monthName, yearStr] = clientDate.split(' ');
+        const monthIndex = [
+          'January','February','March','April','May','June','July','August','September','October','November','December'
+        ].findIndex(m => m.toLowerCase() === monthName.toLowerCase());
+        if (monthIndex === -1) throw new Error('Invalid month');
+        const parsed = new Date(Number(yearStr), monthIndex, Number(day));
+        if (!isNaN(parsed.getTime())) {
+          year = format(parsed, 'yyyy');
+          month = format(parsed, 'MMMM');
+          dayMonthYear = format(parsed, 'dd MMMM yyyy');
+        } else {
+          throw new Error('Invalid date');
+        }
+      } catch {
+        return NextResponse.json({ message: 'Invalid date format. Please use dd MMMM yyyy.' }, { status: 400 });
+      }
+    } else {
+      return NextResponse.json({ message: 'Invalid date format. Please use dd MMMM yyyy.' }, { status: 400 });
+    }
     const s3Key = `${year}/${month}/${dayMonthYear}.pdf`;
 
     const bucketName = process.env.S3_BUCKET_NAME;

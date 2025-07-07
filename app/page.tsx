@@ -27,10 +27,10 @@ export default function Home() {
   }, [status, router]); // Depend on status and router
 
   useEffect(() => {
-    // Format: 05 May 2025
-    const formattedDate = format(new Date(), 'dd MMM yyyy');
-    setCurrentDate(formattedDate);
-  }, []); // Empty dependency array ensures this runs once on mount
+  // Set default date to today on mount (full month name)
+  const formattedDate = format(new Date(), 'dd MMMM yyyy');
+  setCurrentDate(formattedDate);
+  }, []); // Set default date once
 
   const generatePdfBlob = (text: string): Blob => {
     const doc = new jsPDF();
@@ -60,6 +60,11 @@ export default function Home() {
       setStatusMessage('Text area is empty.');
       return;
     }
+    // Validate date format: dd MMMM yyyy (e.g. 07 July 2025)
+    if (!/^\d{2} [A-Za-z]+ \d{4}$/.test(currentDate)) {
+      setStatusMessage('Date must be in format: dd MMMM yyyy (e.g. 07 July 2025)');
+      return;
+    }
     setIsLoading(true);
     setStatusMessage('Generating PDF...');
 
@@ -70,8 +75,9 @@ export default function Home() {
       const formData = new FormData();
       // Use the client-side date for the filename part if desired,
       // but the API route should determine the S3 path based on server date.
-      const filename = `${format(new Date(), 'dd MMM yyyy')}.pdf`;
+      const filename = `${format(new Date(), 'dd MMMM yyyy')}.pdf`;
       formData.append('pdfFile', pdfBlob, filename);
+      formData.append('date', currentDate); // Pass the user-selected date to backend
 
       const response = await fetch('/api/upload', {
         method: 'POST',
@@ -85,7 +91,7 @@ export default function Home() {
         throw new Error(result.message || 'Upload failed');
       }
 
-      setStatusMessage("Successfully added today's entry!");
+      setStatusMessage("Successfully added the entry!");
       setTextContent('');
 
     } catch (error: unknown) {
@@ -125,9 +131,15 @@ export default function Home() {
   if (status === 'authenticated') {
     return (
       <div className="flex flex-col justify-between min-h-screen bg-gray-100 p-8">
-        {/* Header with Date and Sign Out Button */}
+        {/* Header with Date input and Sign Out Button */}
         <div className="flex justify-between items-center mb-4">
-          <h1 className="text-2xl text-black font-bold">{currentDate}</h1>
+          <input
+            type="text"
+            value={currentDate}
+            onChange={e => setCurrentDate(e.target.value)}
+            className="text-2xl text-black font-bold bg-white border rounded px-2 py-1 w-48 focus:outline-none focus:ring-2 focus:ring-blue-400"
+            placeholder="Enter date (e.g. 07 July 2025)"
+          />
           <button
             onClick={() => signOut({ callbackUrl: '/login' })}
             className="px-4 py-1 bg-red-500 text-white rounded hover:bg-red-600"
