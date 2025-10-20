@@ -1,6 +1,7 @@
 'use client';
 
 import { jsPDF } from 'jspdf';
+import html2canvas from 'html2canvas';
 import { format } from 'date-fns';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
@@ -32,25 +33,76 @@ export default function Home() {
   setCurrentDate(formattedDate);
   }, []); // Set default date once
 
-  const generatePdfBlob = (text: string): Blob => {
-    const doc = new jsPDF();
-    const pageHeight = doc.internal.pageSize.height;
-    const margin = 10;
-    const lineHeight = 10;
-    const lines = doc.splitTextToSize(text, 180); // 180 is the text width
+  const generatePdfBlob = async (text: string): Promise<Blob> => {
+    // Create a temporary div to render text with proper emoji support
+    const tempDiv = document.createElement('div');
+    tempDiv.style.position = 'absolute';
+    tempDiv.style.left = '-9999px';
+    tempDiv.style.top = '0';
+    tempDiv.style.width = '720px'; // Width for PDF content (roughly 190mm at 96dpi)
+    tempDiv.style.padding = '40px';
+    tempDiv.style.fontFamily = 'Arial, sans-serif';
+    tempDiv.style.fontSize = '14px';
+    tempDiv.style.lineHeight = '1.6';
+    tempDiv.style.color = '#000000';
+    tempDiv.style.backgroundColor = '#ffffff';
+    tempDiv.style.whiteSpace = 'pre-wrap';
+    tempDiv.style.wordWrap = 'break-word';
+    tempDiv.textContent = text;
+    
+    document.body.appendChild(tempDiv);
 
-    let cursorY = margin;
+    try {
+      // Render the div to canvas with proper emoji support
+      const canvas = await html2canvas(tempDiv, {
+        useCORS: true,
+        logging: false,
+        width: tempDiv.scrollWidth,
+        height: tempDiv.scrollHeight,
+      });
 
-    for (let i = 0; i < lines.length; i++) {
-      if (cursorY + lineHeight > pageHeight - margin) {
-        doc.addPage();
-        cursorY = margin;
+      // Create PDF
+      const doc = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4',
+      });
+
+      // Use JPEG for smaller file size (quality: 0.85 is a good balance)
+      const imgData = canvas.toDataURL('image/jpeg', 0.85);
+      const pdfWidth = doc.internal.pageSize.getWidth();
+      const pdfHeight = doc.internal.pageSize.getHeight();
+      
+      // Calculate image dimensions
+      const imgWidth = pdfWidth;
+      const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+
+      // If content fits on one page
+      if (imgHeight <= pdfHeight) {
+        doc.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
+      } else {
+        // Split content across multiple pages
+        let heightLeft = imgHeight;
+        let position = 0;
+        
+        // Add first page
+        doc.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pdfHeight;
+
+        // Add subsequent pages
+        while (heightLeft > 0) {
+          position = -pdfHeight * (Math.floor((imgHeight - heightLeft) / pdfHeight) + 1);
+          doc.addPage();
+          doc.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
+          heightLeft -= pdfHeight;
+        }
       }
-      doc.text(lines[i], margin, cursorY);
-      cursorY += lineHeight;
-    }
 
-    return doc.output('blob');
+      return doc.output('blob');
+    } finally {
+      // Clean up: remove temporary div
+      document.body.removeChild(tempDiv);
+    }
   };
 
   const handleSave = async () => {
@@ -67,7 +119,7 @@ export default function Home() {
     setStatusMessage('Generating PDF...');
 
     try {
-      const pdfBlob = generatePdfBlob(`\n${currentDate}\n\n${textContent}`);
+      const pdfBlob = await generatePdfBlob(`\n${currentDate}\n\n${textContent}`);
       setStatusMessage('Uploading PDF...');
 
       const formData = new FormData();

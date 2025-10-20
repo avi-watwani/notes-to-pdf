@@ -39,7 +39,7 @@ export async function POST(request: Request) {
     }
 
     // Check file size (optional, adjust the limit as needed)
-    const maxSizeInBytes = 2 * 1024 * 1024; // 2 MB
+    const maxSizeInBytes = 10 * 1024 * 1024; // 10 MB (increased for image-based PDFs with emojis)
     if (pdfFile.size > maxSizeInBytes) {
       return NextResponse.json({ message: 'Uploaded file is too large' }, { status: 400 });
     }
