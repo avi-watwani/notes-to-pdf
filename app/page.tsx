@@ -45,8 +45,6 @@ export default function Home() {
       if (cursorY + lineHeight > pageHeight - margin) {
         doc.addPage();
         cursorY = margin;
-        doc.text('\n', margin, cursorY);
-        cursorY += lineHeight;
       }
       doc.text(lines[i], margin, cursorY);
       cursorY += lineHeight;
