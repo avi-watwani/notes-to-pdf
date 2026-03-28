@@ -104,12 +104,20 @@ export default function SettingsPage() {
       <div className="p-8 bg-white rounded-lg shadow-md w-full max-w-md">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-bold text-black">AWS S3 Settings</h1>
-          <Link
-            href="/"
-            className="text-sm text-blue-600 hover:underline"
-          >
-            Back to Journal
-          </Link>
+          <div className="flex gap-2">
+            <Link
+              href="/calendar"
+              className="text-sm text-blue-600 hover:underline"
+            >
+              Calendar
+            </Link>
+            <Link
+              href="/"
+              className="text-sm text-blue-600 hover:underline"
+            >
+              Back to Journal
+            </Link>
+          </div>
         </div>
         
         <form onSubmit={handleSubmit}>

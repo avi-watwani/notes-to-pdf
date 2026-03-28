@@ -205,6 +205,12 @@ export default function Home() {
         />
         <div className="flex gap-2">
           <Link
+            href="/calendar"
+            className="px-4 py-1 bg-gray-600 text-white rounded hover:bg-gray-700"
+          >
+            Calendar
+          </Link>
+          <Link
             href="/settings"
             className="px-4 py-1 bg-gray-600 text-white rounded hover:bg-gray-700"
           >

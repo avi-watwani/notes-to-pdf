@@ -2,6 +2,7 @@ import { format } from 'date-fns';
 import { NextResponse } from 'next/server';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { getAdminAuth, getAdminFirestore } from '@/lib/firebase/admin';
+import * as admin from 'firebase-admin';
 
 export async function POST(request: Request) {
   try {
@@ -57,7 +58,7 @@ export async function POST(request: Request) {
     const fileBuffer = Buffer.from(await pdfFile.arrayBuffer());
 
     const clientDate = formData.get('date');
-    let year, month, dayMonthYear;
+    let year, month, dayMonthYear, parsed: Date;
     if (typeof clientDate === 'string' && /^\d{2} [A-Za-z]+ \d{4}$/.test(clientDate)) {
       try {
         const [day, monthName, yearStr] = clientDate.split(' ');
@@ -65,7 +66,7 @@ export async function POST(request: Request) {
           'January','February','March','April','May','June','July','August','September','October','November','December'
         ].findIndex(m => m.toLowerCase() === monthName.toLowerCase());
         if (monthIndex === -1) throw new Error('Invalid month');
-        const parsed = new Date(Number(yearStr), monthIndex, Number(day));
+        parsed = new Date(Number(yearStr), monthIndex, Number(day));
         if (!isNaN(parsed.getTime())) {
           year = format(parsed, 'yyyy');
           month = format(parsed, 'MMMM');
@@ -97,6 +98,12 @@ export async function POST(request: Request) {
     });
 
     await s3Client.send(command);
+
+    const isoDate = format(parsed, 'yyyy-MM-dd');
+    await db.collection('users').doc(uid).collection('journalDays').doc(isoDate).set({
+      s3Key,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
 
     return NextResponse.json(
       { message: 'File uploaded successfully', key: s3Key },

@@ -24,5 +24,5 @@ export async function middleware(request: NextRequest) {
 
 // Only these routes run through this file. /login, /signup, /api/*, etc. are not matched.
 export const config = {
-  matcher: ['/', '/settings'],
+  matcher: ['/', '/settings', '/calendar'],
 };
