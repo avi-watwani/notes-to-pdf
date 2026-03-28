@@ -5,33 +5,24 @@ import html2canvas from 'html2canvas';
 import { format } from 'date-fns';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
-import { useSession, signIn, signOut } from 'next-auth/react';
+import { signOut as firebaseSignOut } from 'firebase/auth';
+import { useAuth } from '@/app/components/AuthProvider';
+import { getFirebaseAuth } from '@/lib/firebase/client';
+import Link from 'next/link';
 
 export default function Home() {
   const router = useRouter();
-  const { status } = useSession();
+  const { user, loading } = useAuth();
 
   const [isLoading, setIsLoading] = useState(false);
   const [currentDate, setCurrentDate] = useState('');
   const [textContent, setTextContent] = useState('');
   const [statusMessage, setStatusMessage] = useState('');
 
-  // --- Handle Authentication Status ---
   useEffect(() => {
-    if (status === 'unauthenticated') {
-      // Option 1: Use NextAuth's signIn function which can redirect
-      signIn(); // Redirects to the page defined in authOptions.pages.signIn
-
-      // Option 2: Manual redirect (less common for simple cases)
-      // router.push('/login');
-    }
-  }, [status, router]); // Depend on status and router
-
-  useEffect(() => {
-  // Set default date to today on mount (full month name)
-  const formattedDate = format(new Date(), 'dd MMMM yyyy');
-  setCurrentDate(formattedDate);
-  }, []); // Set default date once
+    const formattedDate = format(new Date(), 'dd MMMM yyyy');
+    setCurrentDate(formattedDate);
+  }, []);
 
   const generatePdfBlob = async (text: string): Promise<Blob> => {
     // Create a temporary div to render text with proper emoji support
@@ -110,9 +101,12 @@ export default function Home() {
       setStatusMessage('Text area is empty.');
       return;
     }
-    // Validate date format: dd MMMM yyyy (e.g. 07 July 2025)
     if (!/^\d{2} [A-Za-z]+ \d{4}$/.test(currentDate)) {
       setStatusMessage('Date must be in format: dd MMMM yyyy (e.g. 07 July 2025)');
+      return;
+    }
+    if (!user) {
+      setStatusMessage('Not authenticated.');
       return;
     }
     setIsLoading(true);
@@ -122,17 +116,19 @@ export default function Home() {
       const pdfBlob = await generatePdfBlob(`\n${currentDate}\n\n${textContent}`);
       setStatusMessage('Uploading PDF...');
 
+      const idToken = await user.getIdToken();
+
       const formData = new FormData();
-      // Use the client-side date for the filename part if desired,
-      // but the API route should determine the S3 path based on server date.
       const filename = `${format(new Date(), 'dd MMMM yyyy')}.pdf`;
       formData.append('pdfFile', pdfBlob, filename);
-      formData.append('date', currentDate); // Pass the user-selected date to backend
+      formData.append('date', currentDate);
 
       const response = await fetch('/api/upload', {
         method: 'POST',
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+        },
         body: formData,
-        // Headers are automatically set for FormData by fetch
       });
 
       const result = await response.json();
@@ -160,16 +156,28 @@ export default function Home() {
         // Optionally log the structure if it's something else unexpected
       }
 
-      setStatusMessage(errorMessage); // Set the potentially refined error message (custom error message)
+      setStatusMessage(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // --- Conditional Rendering based on Auth Status ---
+  const handleSignOut = async () => {
+    try {
+      const auth = getFirebaseAuth();
+      await firebaseSignOut(auth);
+      
+      await fetch('/api/auth/session', {
+        method: 'DELETE',
+      });
 
-  // 1. Show loading state while session status is being determined
-  if (status === 'loading') {
+      router.push('/login');
+    } catch (err) {
+      console.error('Sign out error:', err);
+    }
+  };
+
+  if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <p className="text-lg text-gray-600">Loading session...</p>
@@ -177,54 +185,57 @@ export default function Home() {
     );
   }
 
-  // 2. Render the main content ONLY if authenticated
-  if (status === 'authenticated') {
+  if (!user) {
     return (
-      <div className="flex flex-col justify-between min-h-screen bg-gray-100 p-8">
-        {/* Header with Date input and Sign Out Button */}
-        <div className="flex justify-between items-center mb-4">
-          <input
-            type="text"
-            value={currentDate}
-            onChange={e => setCurrentDate(e.target.value)}
-            className="text-2xl text-black font-bold bg-white border rounded px-2 py-1 w-48 focus:outline-none focus:ring-2 focus:ring-blue-400"
-            placeholder="Enter date (e.g. 07 July 2025)"
-          />
+      <div className="flex items-center justify-center min-h-screen">
+        <p className="text-lg text-gray-600">You are not logged in. Please log in to access your journal.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-col justify-between min-h-screen bg-gray-100 p-8">
+      <div className="flex justify-between items-center mb-4">
+        <input
+          type="text"
+          value={currentDate}
+          onChange={e => setCurrentDate(e.target.value)}
+          className="text-2xl text-black font-bold bg-white border rounded px-2 py-1 w-48 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          placeholder="Enter date (e.g. 07 July 2025)"
+        />
+        <div className="flex gap-2">
+          <Link
+            href="/settings"
+            className="px-4 py-1 bg-gray-600 text-white rounded hover:bg-gray-700"
+          >
+            Settings
+          </Link>
           <button
-            onClick={() => signOut({ callbackUrl: '/login' })}
+            onClick={handleSignOut}
             className="px-4 py-1 bg-red-500 text-white rounded hover:bg-red-600"
           >
             Sign Out
           </button>
         </div>
-
-        {/* Expanded text area */}
-        <textarea
-          value={textContent}
-          placeholder="Enter your text here..."
-          onChange={(e) => setTextContent(e.target.value)}
-          className="flex-1 w-full p-4 border rounded-lg shadow-md resize-none text-lg text-black placeholder-gray-500"
-        />
-
-        {/* Button + Status Message aligned to the left */}
-        <div className="flex items-center mt-4 space-x-4">
-          <button
-            onClick={handleSave}
-            disabled={isLoading}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 disabled:opacity-50"
-          >
-            {isLoading ? 'Saving...' : 'Save'}
-          </button>
-          {statusMessage && <p className="text-sm text-gray-700">{statusMessage}</p>}
-        </div>
       </div>
-    );
-  }
 
-  // 3. If unauthenticated, show a message or redirect
-  return (
-    <div className="flex items-center justify-center min-h-screen">
-      <p className="text-lg text-gray-600">You are not logged in. Please log in to access your journal.</p>
+      <textarea
+        value={textContent}
+        placeholder="Enter your text here..."
+        onChange={(e) => setTextContent(e.target.value)}
+        className="flex-1 w-full p-4 border rounded-lg shadow-md resize-none text-lg text-black placeholder-gray-500"
+      />
+
+      <div className="flex items-center mt-4 space-x-4">
+        <button
+          onClick={handleSave}
+          disabled={isLoading}
+          className="px-6 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 disabled:opacity-50"
+        >
+          {isLoading ? 'Saving...' : 'Save'}
+        </button>
+        {statusMessage && <p className="text-sm text-gray-700">{statusMessage}</p>}
+      </div>
     </div>
   );
 }
