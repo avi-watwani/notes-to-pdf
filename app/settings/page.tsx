@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { useAuth } from '@/app/components/AuthProvider';
 import { getFirebaseFirestore } from '@/lib/firebase/client';
+import { authInputClass, authLinkAccentClass, authPrimaryButtonClass } from '@/app/components/auth-ui';
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -93,33 +94,32 @@ export default function SettingsPage() {
 
   if (loading || isFetching) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
-        <p className="text-lg text-gray-600">Loading settings...</p>
+      <div className="flex min-h-dvh items-center justify-center bg-white">
+        <p className="text-lg text-neutral-600">Loading settings...</p>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen min-h-dvh items-center justify-center bg-gray-100 px-4 py-8">
-      <div className="w-full max-w-md rounded-lg bg-white p-5 shadow-md sm:p-8">
-        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-          <h1 className="text-xl font-bold text-black sm:text-2xl">AWS S3 Settings</h1>
-          <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm">
-            <Link href="/calendar" className="text-blue-600 hover:underline">
+    <div className="flex min-h-dvh items-center justify-center bg-white px-5 py-8 sm:px-6 lg:px-12 lg:py-16">
+      <div className="w-full max-w-md">
+        <div className="mb-8 flex flex-row items-start justify-between gap-4">
+          <h1 className="min-w-0 flex-1 text-2xl font-bold tracking-tight text-neutral-900 pr-2">
+            AWS S3 Settings
+          </h1>
+          <div className="flex shrink-0 gap-x-4 text-sm">
+            <Link href="/calendar" className={`${authLinkAccentClass} hidden sm:inline`}>
               Calendar
             </Link>
-            <Link href="/" className="text-blue-600 hover:underline">
+            <Link href="/" className={authLinkAccentClass}>
               Back to Journal
             </Link>
           </div>
         </div>
-        
+
         <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label
-              htmlFor="awsAccessKeyId"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
+          <div className="mb-5">
+            <label htmlFor="awsAccessKeyId" className="mb-1.5 block text-sm font-medium text-neutral-700">
               AWS Access Key ID
             </label>
             <input
@@ -129,17 +129,14 @@ export default function SettingsPage() {
               value={awsAccessKeyId}
               onChange={(e) => setAwsAccessKeyId(e.target.value)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-black"
+              className={authInputClass}
               placeholder="AKIAIOSFODNN7EXAMPLE"
               disabled={isLoading}
             />
           </div>
 
-          <div className="mb-4">
-            <label
-              htmlFor="awsSecretAccessKey"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
+          <div className="mb-5">
+            <label htmlFor="awsSecretAccessKey" className="mb-1.5 block text-sm font-medium text-neutral-700">
               AWS Secret Access Key
             </label>
             <input
@@ -149,17 +146,14 @@ export default function SettingsPage() {
               value={awsSecretAccessKey}
               onChange={(e) => setAwsSecretAccessKey(e.target.value)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-black"
-              placeholder="wJalrXUtnFEMI..."
+              className={authInputClass}
+              placeholder="Secret access key"
               disabled={isLoading}
             />
           </div>
 
-          <div className="mb-4">
-            <label
-              htmlFor="awsRegion"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
+          <div className="mb-5">
+            <label htmlFor="awsRegion" className="mb-1.5 block text-sm font-medium text-neutral-700">
               AWS Region
             </label>
             <input
@@ -169,17 +163,14 @@ export default function SettingsPage() {
               value={awsRegion}
               onChange={(e) => setAwsRegion(e.target.value)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-black"
+              className={authInputClass}
               placeholder="us-east-1"
               disabled={isLoading}
             />
           </div>
 
-          <div className="mb-4">
-            <label
-              htmlFor="s3BucketName"
-              className="block text-sm font-medium text-gray-700 mb-1"
-            >
+          <div className="mb-6">
+            <label htmlFor="s3BucketName" className="mb-1.5 block text-sm font-medium text-neutral-700">
               S3 Bucket Name
             </label>
             <input
@@ -189,25 +180,17 @@ export default function SettingsPage() {
               value={s3BucketName}
               onChange={(e) => setS3BucketName(e.target.value)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-black"
+              className={authInputClass}
               placeholder="my-journal-bucket"
               disabled={isLoading}
             />
           </div>
 
-          {error && (
-            <p className="mb-4 text-sm text-red-600">{error}</p>
-          )}
+          {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
 
-          {successMessage && (
-            <p className="mb-4 text-sm text-green-600">{successMessage}</p>
-          )}
+          {successMessage && <p className="mb-4 text-sm text-emerald-700">{successMessage}</p>}
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full px-4 py-2 bg-blue-600 text-white rounded-md shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-          >
+          <button type="submit" disabled={isLoading} className={authPrimaryButtonClass}>
             {isLoading ? 'Saving...' : 'Save Settings'}
           </button>
         </form>

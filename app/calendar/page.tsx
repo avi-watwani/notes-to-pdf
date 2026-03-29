@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { 
   format, 
   startOfMonth, 
@@ -17,13 +18,32 @@ import {
 import { collection, query, where, getDocs, documentId } from 'firebase/firestore';
 import { useAuth } from '@/app/components/AuthProvider';
 import { getFirebaseFirestore } from '@/lib/firebase/client';
+import { appButtonGhost, appSegmentAccent, appSegmentButton, appSegmentGroup } from '@/app/components/auth-ui';
 
 export default function CalendarPage() {
+  const router = useRouter();
   const { user, loading } = useAuth();
 
   const [anchorMonth, setAnchorMonth] = useState<Date>(startOfMonth(new Date()));
   const [journalDates, setJournalDates] = useState<Set<string>>(new Set());
   const [isLoadingData, setIsLoadingData] = useState(false);
+  const [navMenuOpen, setNavMenuOpen] = useState(false);
+
+  useEffect(() => {
+    if (!navMenuOpen) return;
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setNavMenuOpen(false);
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [navMenuOpen]);
+
+  useEffect(() => {
+    if (loading) return;
+    if (!user) {
+      router.replace('/login');
+    }
+  }, [loading, user, router]);
 
   useEffect(() => {
     if (!user) return;
@@ -101,7 +121,6 @@ export default function CalendarPage() {
                   ${!isCurrentMonth ? 'text-gray-300' : 'text-black'}
                   ${isToday ? 'bg-blue-100 font-bold' : ''}
                   ${hasEntry && isCurrentMonth ? 'bg-green-200 font-semibold' : ''}
-                  ${hasEntry && !isCurrentMonth ? 'bg-green-100' : ''}
                 `}
               >
                 {format(day, 'd')}
@@ -122,11 +141,7 @@ export default function CalendarPage() {
   }
 
   if (!user) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <p className="text-lg text-gray-600">You are not logged in. Please log in to access the calendar.</p>
-      </div>
-    );
+    return null;
   }
 
   const prevMonth = subMonths(anchorMonth, 1);
@@ -135,56 +150,113 @@ export default function CalendarPage() {
   return (
     <div className="min-h-screen bg-gray-100 px-4 py-6 sm:p-8">
       <div className="mx-auto max-w-7xl">
-        <div className="mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
-          <h1 className="text-2xl font-bold text-black sm:text-3xl">Journal Calendar</h1>
-          <div className="flex flex-wrap gap-2">
-            <Link
-              href="/"
-              className="rounded bg-gray-600 px-3 py-2 text-center text-sm text-white hover:bg-gray-700 sm:px-4"
-            >
+        <div className="mb-6 flex flex-col gap-4 sm:mb-8 md:flex-row md:items-start md:justify-between md:gap-4">
+          <div className="flex w-full min-w-0 items-center gap-2 md:contents">
+            <h1 className="min-w-0 flex-1 text-2xl font-bold text-black sm:text-3xl md:flex-none">
+              Journal Calendar
+            </h1>
+            <div className="relative shrink-0 md:hidden">
+              <button
+                type="button"
+                aria-expanded={navMenuOpen}
+                aria-haspopup="menu"
+                aria-label={navMenuOpen ? 'Close menu' : 'Open menu'}
+                className="inline-flex h-11 w-11 items-center justify-center rounded-xl border-0 bg-white text-neutral-800 shadow-sm ring-1 ring-neutral-200/80 transition hover:bg-neutral-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#10214d]/25"
+                onClick={() => setNavMenuOpen((open) => !open)}
+              >
+                <span className="flex w-5 flex-col gap-1" aria-hidden>
+                  <span className="h-0.5 rounded-full bg-neutral-800" />
+                  <span className="h-0.5 rounded-full bg-neutral-800" />
+                  <span className="h-0.5 rounded-full bg-neutral-800" />
+                </span>
+              </button>
+              {navMenuOpen && (
+                <>
+                  <button
+                    type="button"
+                    aria-label="Dismiss menu"
+                    className="fixed inset-0 z-40 bg-neutral-900/20"
+                    onClick={() => setNavMenuOpen(false)}
+                  />
+                  <div
+                    role="menu"
+                    className="absolute right-0 top-[calc(100%+0.5rem)] z-50 min-w-[11rem] overflow-hidden rounded-xl bg-white py-1.5 shadow-lg ring-1 ring-neutral-200/80"
+                  >
+                    <Link
+                      href="/"
+                      role="menuitem"
+                      className="flex w-full px-4 py-3 text-left text-sm font-medium text-neutral-800 transition hover:bg-neutral-100"
+                      onClick={() => setNavMenuOpen(false)}
+                    >
+                      Back to Journal
+                    </Link>
+                    <Link
+                      href="/settings"
+                      role="menuitem"
+                      className="flex w-full px-4 py-3 text-left text-sm font-medium text-neutral-800 transition hover:bg-neutral-100"
+                      onClick={() => setNavMenuOpen(false)}
+                    >
+                      Settings
+                    </Link>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+          <div className="hidden flex-wrap items-center gap-2 md:flex">
+            <Link href="/" className={appButtonGhost}>
               Back to Journal
             </Link>
-            <Link
-              href="/settings"
-              className="rounded bg-gray-600 px-3 py-2 text-center text-sm text-white hover:bg-gray-700 sm:px-4"
-            >
+            <Link href="/settings" className={appButtonGhost}>
               Settings
             </Link>
           </div>
         </div>
 
-        <div className="mb-6 flex flex-wrap items-center justify-center gap-2 sm:mb-8 sm:gap-4">
-          <button
-            type="button"
-            onClick={() => setAnchorMonth((prev) => subMonths(prev, 1))}
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 sm:px-6"
-          >
-            ← Previous
-          </button>
-          <button
-            type="button"
-            onClick={() => setAnchorMonth(startOfMonth(new Date()))}
-            className="rounded-lg bg-gray-600 px-4 py-2 text-sm text-white hover:bg-gray-700 sm:px-6"
-          >
-            Today
-          </button>
-          <button
-            type="button"
-            onClick={() => setAnchorMonth((prev) => addMonths(prev, 1))}
-            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 sm:px-6"
-          >
-            Next →
-          </button>
+        <div className="mb-6 flex justify-center sm:mb-8">
+          <div className={appSegmentGroup}>
+            <button
+              type="button"
+              onClick={() => setAnchorMonth((prev) => subMonths(prev, 1))}
+              className={appSegmentButton}
+            >
+              ← Prev
+            </button>
+            <button
+              type="button"
+              onClick={() => setAnchorMonth(startOfMonth(new Date()))}
+              className={appSegmentAccent}
+            >
+              Today
+            </button>
+            <button
+              type="button"
+              onClick={() => setAnchorMonth((prev) => addMonths(prev, 1))}
+              className={appSegmentButton}
+            >
+              Next →
+            </button>
+          </div>
         </div>
 
         {isLoadingData && (
           <div className="mb-4 text-center text-gray-600">Loading entries...</div>
         )}
 
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          <div className="hidden lg:block">{renderMonth(prevMonth)}</div>
-          {renderMonth(anchorMonth)}
-          <div className="hidden lg:block">{renderMonth(nextMonth)}</div>
+        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-3">
+          <div className="hidden lg:contents">
+            <div className="mx-auto w-full max-w-sm sm:max-w-md lg:mx-0 lg:max-w-none">
+              {renderMonth(prevMonth)}
+            </div>
+          </div>
+          <div className="mx-auto w-full max-w-sm sm:max-w-md lg:mx-0 lg:max-w-none">
+            {renderMonth(anchorMonth)}
+          </div>
+          <div className="hidden lg:contents">
+            <div className="mx-auto w-full max-w-sm sm:max-w-md lg:mx-0 lg:max-w-none">
+              {renderMonth(nextMonth)}
+            </div>
+          </div>
         </div>
 
         <div className="mt-6 text-center text-xs text-gray-600 sm:mt-8 sm:text-sm">
