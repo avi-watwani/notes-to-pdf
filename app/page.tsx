@@ -194,31 +194,32 @@ export default function Home() {
   }
 
   return (
-    <div className="flex flex-col justify-between min-h-screen bg-gray-100 p-8">
-      <div className="flex justify-between items-center mb-4">
+    <div className="flex min-h-screen min-h-dvh flex-col justify-between bg-gray-100 px-4 py-4 sm:p-6 md:p-8">
+      <div className="mb-3 flex flex-col gap-3 sm:mb-4 md:flex-row md:items-start md:justify-between">
         <input
           type="text"
           value={currentDate}
-          onChange={e => setCurrentDate(e.target.value)}
-          className="text-2xl text-black font-bold bg-white border rounded px-2 py-1 w-48 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          onChange={(e) => setCurrentDate(e.target.value)}
+          className="w-full max-w-full rounded border bg-white px-2 py-2 text-lg font-bold text-black focus:outline-none focus:ring-2 focus:ring-blue-400 sm:w-auto sm:min-w-[12rem] md:text-2xl"
           placeholder="Enter date (e.g. 07 July 2025)"
         />
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Link
             href="/calendar"
-            className="px-4 py-1 bg-gray-600 text-white rounded hover:bg-gray-700"
+            className="rounded bg-gray-600 px-3 py-1.5 text-center text-sm text-white hover:bg-gray-700 sm:px-4 sm:py-1"
           >
             Calendar
           </Link>
           <Link
             href="/settings"
-            className="px-4 py-1 bg-gray-600 text-white rounded hover:bg-gray-700"
+            className="rounded bg-gray-600 px-3 py-1.5 text-center text-sm text-white hover:bg-gray-700 sm:px-4 sm:py-1"
           >
             Settings
           </Link>
           <button
+            type="button"
             onClick={handleSignOut}
-            className="px-4 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+            className="rounded bg-red-500 px-3 py-1.5 text-sm text-white hover:bg-red-600 sm:px-4 sm:py-1"
           >
             Sign Out
           </button>
@@ -229,18 +230,21 @@ export default function Home() {
         value={textContent}
         placeholder="Enter your text here..."
         onChange={(e) => setTextContent(e.target.value)}
-        className="flex-1 w-full p-4 border rounded-lg shadow-md resize-none text-lg text-black placeholder-gray-500"
+        className="min-h-[40vh] w-full flex-1 resize-none rounded-lg border p-3 text-base text-black shadow-md placeholder:text-gray-500 sm:min-h-[50vh] sm:p-4 sm:text-lg"
       />
 
-      <div className="flex items-center mt-4 space-x-4">
+      <div className="mt-3 flex flex-col gap-2 sm:mt-4 sm:flex-row sm:items-center sm:gap-4">
         <button
+          type="button"
           onClick={handleSave}
           disabled={isLoading}
-          className="px-6 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 disabled:opacity-50"
+          className="rounded-lg bg-blue-600 px-5 py-2.5 text-white shadow hover:bg-blue-700 disabled:opacity-50 sm:px-6 sm:py-2"
         >
           {isLoading ? 'Saving...' : 'Save'}
         </button>
-        {statusMessage && <p className="text-sm text-gray-700">{statusMessage}</p>}
+        {statusMessage && (
+          <p className="text-xs text-gray-700 sm:text-sm">{statusMessage}</p>
+        )}
       </div>
     </div>
   );

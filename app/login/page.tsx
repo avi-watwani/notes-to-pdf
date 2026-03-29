@@ -5,6 +5,13 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { signInWithEmailAndPassword, sendPasswordResetEmail } from 'firebase/auth';
 import { getFirebaseAuth } from '@/lib/firebase/client';
+import { AuthSplitLayout } from '@/app/components/AuthSplitLayout';
+import {
+  authInputClass,
+  authLinkAccentClass,
+  authLinkMutedClass,
+  authPrimaryButtonClass,
+} from '@/app/components/auth-ui';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -65,16 +72,18 @@ export default function LoginPage() {
 
   if (showForgotPassword) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
-        <div className="p-8 bg-white rounded-lg shadow-md w-full max-w-sm">
-          <h1 className="text-2xl font-bold mb-6 text-center text-black">Reset Password</h1>
+      <AuthSplitLayout>
+        <div className="w-full">
+          <h1 className="mb-8 text-center text-2xl font-bold tracking-tight text-neutral-900">
+            Reset Password
+          </h1>
           <form onSubmit={handlePasswordReset}>
-            <div className="mb-4">
+            <div className="mb-5">
               <label
                 htmlFor="resetEmail"
-                className="block text-sm font-medium text-gray-700 mb-1"
+                className="mb-1.5 block text-sm font-medium text-neutral-700"
               >
-                Email
+                Email Address
               </label>
               <input
                 id="resetEmail"
@@ -83,47 +92,47 @@ export default function LoginPage() {
                 value={resetEmail}
                 onChange={(e) => setResetEmail(e.target.value)}
                 required
-                className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-black"
-                placeholder="Enter your email"
+                className={authInputClass}
+                placeholder="Email Address"
               />
             </div>
 
             {resetMessage && (
-              <p className="mb-4 text-sm text-gray-700">{resetMessage}</p>
+              <p className="mb-4 text-sm text-neutral-600">{resetMessage}</p>
             )}
 
-            <button
-              type="submit"
-              className="w-full px-4 py-2 bg-blue-600 text-white rounded-md shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-            >
+            <button type="submit" className={authPrimaryButtonClass}>
               Send Reset Email
             </button>
           </form>
 
-          <div className="mt-4 text-center">
+          <div className="mt-6 text-center">
             <button
+              type="button"
               onClick={() => setShowForgotPassword(false)}
-              className="text-sm text-blue-600 hover:underline"
+              className={authLinkMutedClass}
             >
               Back to login
             </button>
           </div>
         </div>
-      </div>
+      </AuthSplitLayout>
     );
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <div className="p-8 bg-white rounded-lg shadow-md w-full max-w-sm">
-        <h1 className="text-2xl font-bold mb-6 text-center text-black">Journal Login</h1>
+    <AuthSplitLayout>
+      <div className="w-full">
+        <h1 className="mb-8 text-center text-2xl font-bold tracking-tight text-neutral-900">
+          Welcome Back!
+        </h1>
         <form onSubmit={handleSubmit}>
-          <div className="mb-4">
+          <div className="mb-5">
             <label
               htmlFor="email"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="mb-1.5 block text-sm font-medium text-neutral-700"
             >
-              Email
+              Email Address
             </label>
             <input
               id="email"
@@ -132,16 +141,16 @@ export default function LoginPage() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-black"
-              placeholder="Enter your email"
+              className={authInputClass}
+              placeholder="Email Address"
               disabled={isLoading}
             />
           </div>
 
-          <div className="mb-4">
+          <div className="mb-6">
             <label
               htmlFor="password"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="mb-1.5 block text-sm font-medium text-neutral-700"
             >
               Password
             </label>
@@ -152,40 +161,35 @@ export default function LoginPage() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-black"
-              placeholder="Enter your password"
+              className={authInputClass}
+              placeholder="Password"
               disabled={isLoading}
             />
           </div>
 
-          {error && (
-            <p className="mb-4 text-sm text-red-600">{error}</p>
-          )}
+          {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full px-4 py-2 bg-blue-600 text-white rounded-md shadow hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
-          >
+          <button type="submit" disabled={isLoading} className={authPrimaryButtonClass}>
             {isLoading ? 'Logging In...' : 'Login'}
           </button>
         </form>
 
-        <div className="mt-4 text-center space-y-2">
+        <div className="mt-6 space-y-4 text-center">
           <button
+            type="button"
             onClick={() => setShowForgotPassword(true)}
-            className="text-sm text-blue-600 hover:underline block w-full"
+            className={`${authLinkMutedClass} block w-full`}
           >
-            Forgot password?
+            Forgot your password
           </button>
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-neutral-600">
             Don&apos;t have an account?{' '}
-            <Link href="/signup" className="text-blue-600 hover:underline">
+            <Link href="/signup" className={authLinkAccentClass}>
               Sign up
             </Link>
           </p>
         </div>
       </div>
-    </div>
+    </AuthSplitLayout>
   );
 }

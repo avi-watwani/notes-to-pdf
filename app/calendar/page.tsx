@@ -75,14 +75,14 @@ export default function CalendarPage() {
     const weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
     return (
-      <div className="bg-white rounded-lg shadow-md p-4">
-        <h2 className="text-xl font-bold text-center mb-4 text-black">
+      <div className="rounded-lg bg-white p-3 shadow-md sm:p-4">
+        <h2 className="mb-3 text-center text-lg font-bold text-black sm:mb-4 sm:text-xl">
           {format(monthDate, 'MMMM yyyy')}
         </h2>
-        
-        <div className="grid grid-cols-7 gap-1">
+
+        <div className="grid grid-cols-7 gap-0.5 sm:gap-1">
           {weekdays.map(day => (
-            <div key={day} className="text-center font-semibold text-gray-600 text-sm py-2">
+            <div key={day} className="py-1 text-center text-[10px] font-semibold text-gray-600 sm:py-2 sm:text-sm">
               {day}
             </div>
           ))}
@@ -97,7 +97,7 @@ export default function CalendarPage() {
               <div
                 key={idx}
                 className={`
-                  aspect-square flex items-center justify-center text-sm rounded
+                  flex aspect-square items-center justify-center rounded text-xs sm:text-sm
                   ${!isCurrentMonth ? 'text-gray-300' : 'text-black'}
                   ${isToday ? 'bg-blue-100 font-bold' : ''}
                   ${hasEntry && isCurrentMonth ? 'bg-green-200 font-semibold' : ''}
@@ -133,58 +133,61 @@ export default function CalendarPage() {
   const nextMonth = addMonths(anchorMonth, 1);
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-8">
-          <h1 className="text-3xl font-bold text-black">Journal Calendar</h1>
-          <div className="flex gap-2">
+    <div className="min-h-screen bg-gray-100 px-4 py-6 sm:p-8">
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-6 flex flex-col gap-4 sm:mb-8 sm:flex-row sm:items-center sm:justify-between">
+          <h1 className="text-2xl font-bold text-black sm:text-3xl">Journal Calendar</h1>
+          <div className="flex flex-wrap gap-2">
             <Link
               href="/"
-              className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+              className="rounded bg-gray-600 px-3 py-2 text-center text-sm text-white hover:bg-gray-700 sm:px-4"
             >
               Back to Journal
             </Link>
             <Link
               href="/settings"
-              className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
+              className="rounded bg-gray-600 px-3 py-2 text-center text-sm text-white hover:bg-gray-700 sm:px-4"
             >
               Settings
             </Link>
           </div>
         </div>
 
-        <div className="flex justify-center items-center gap-4 mb-8">
+        <div className="mb-6 flex flex-wrap items-center justify-center gap-2 sm:mb-8 sm:gap-4">
           <button
-            onClick={() => setAnchorMonth(prev => subMonths(prev, 1))}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold"
+            type="button"
+            onClick={() => setAnchorMonth((prev) => subMonths(prev, 1))}
+            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 sm:px-6"
           >
             ← Previous
           </button>
           <button
+            type="button"
             onClick={() => setAnchorMonth(startOfMonth(new Date()))}
-            className="px-6 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700"
+            className="rounded-lg bg-gray-600 px-4 py-2 text-sm text-white hover:bg-gray-700 sm:px-6"
           >
             Today
           </button>
           <button
-            onClick={() => setAnchorMonth(prev => addMonths(prev, 1))}
-            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold"
+            type="button"
+            onClick={() => setAnchorMonth((prev) => addMonths(prev, 1))}
+            className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 sm:px-6"
           >
             Next →
           </button>
         </div>
 
         {isLoadingData && (
-          <div className="text-center text-gray-600 mb-4">Loading entries...</div>
+          <div className="mb-4 text-center text-gray-600">Loading entries...</div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {renderMonth(prevMonth)}
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+          <div className="hidden lg:block">{renderMonth(prevMonth)}</div>
           {renderMonth(anchorMonth)}
-          {renderMonth(nextMonth)}
+          <div className="hidden lg:block">{renderMonth(nextMonth)}</div>
         </div>
 
-        <div className="mt-8 text-center text-sm text-gray-600">
+        <div className="mt-6 text-center text-xs text-gray-600 sm:mt-8 sm:text-sm">
           <p className="mb-2">Days with journal entries are highlighted in green.</p>
           <p>Today is marked with a blue background.</p>
         </div>

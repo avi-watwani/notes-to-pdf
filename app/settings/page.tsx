@@ -100,21 +100,15 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100 py-8">
-      <div className="p-8 bg-white rounded-lg shadow-md w-full max-w-md">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold text-black">AWS S3 Settings</h1>
-          <div className="flex gap-2">
-            <Link
-              href="/calendar"
-              className="text-sm text-blue-600 hover:underline"
-            >
+    <div className="flex min-h-screen min-h-dvh items-center justify-center bg-gray-100 px-4 py-8">
+      <div className="w-full max-w-md rounded-lg bg-white p-5 shadow-md sm:p-8">
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+          <h1 className="text-xl font-bold text-black sm:text-2xl">AWS S3 Settings</h1>
+          <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm">
+            <Link href="/calendar" className="text-blue-600 hover:underline">
               Calendar
             </Link>
-            <Link
-              href="/"
-              className="text-sm text-blue-600 hover:underline"
-            >
+            <Link href="/" className="text-blue-600 hover:underline">
               Back to Journal
             </Link>
           </div>
