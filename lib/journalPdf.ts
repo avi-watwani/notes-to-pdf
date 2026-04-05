@@ -41,7 +41,7 @@ export const JOURNAL_PDF_CAPTURE_CSS = `
   background: #ffffff;
   box-sizing: border-box;
 }
-.journal-pdf-date { font-size: 18px; font-weight: 700; margin: 0 0 1rem 0; }
+.journal-pdf-date { font-size: 18px; font-weight: 700; margin: 0 0 1.5rem 0; }
 /* Stack blocks with no extra rules: spacing comes only from what the user typed
    (empty <p> or <p><br></p> = one blank line). */
 .journal-pdf-body {
