@@ -10,11 +10,17 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.802.0",
+    "@tiptap/extension-placeholder": "^3.22.2",
+    "@tiptap/extension-underline": "^3.22.2",
+    "@tiptap/pm": "^3.22.2",
+    "@tiptap/react": "^3.22.2",
+    "@tiptap/starter-kit": "^3.22.2",
     "date-fns": "^4.1.0",
     "firebase": "^11.2.0",
     "firebase-admin": "^13.0.2",
     "formidable": "^3.5.4",
     "html2canvas": "^1.4.1",
+    "isomorphic-dompurify": "^3.7.1",
     "jspdf": "^4.2.1",
     "next": "15.5.14",
     "react": "^19.0.0",
@@ -24,15 +30,14 @@
     "@eslint/eslintrc": "^3",
     "@tailwindcss/postcss": "^4",
     "@types/formidable": "^3.4.5",
-    "@types/html2canvas": "^0.5.35",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "dotenv": "^16.4.7",
     "eslint": "^9",
     "eslint-config-next": "15.5.14",
     "tailwindcss": "^4",
     "tsx": "^4.19.3",
-    "typescript": "^5",
-    "dotenv": "^16.4.7"
+    "typescript": "^5"
   }
 }

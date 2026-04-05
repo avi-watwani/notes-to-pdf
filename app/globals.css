@@ -24,3 +24,47 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* TipTap placeholder (empty blocks get data-placeholder + is-empty) */
+.journal-editor-content .is-empty[data-placeholder]::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
+  color: rgb(163 163 163);
+}
+
+/* Restore markers — Tailwind preflight sets ol, ul { list-style: none } */
+/* Match PDF: no invented gaps—only empty paragraphs (blank lines) add vertical space. */
+.journal-editor-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+.journal-editor-content > * {
+  margin-block: 0;
+}
+.journal-editor-content > p:empty {
+  min-height: 1.6em;
+}
+.journal-editor-content > p:has(> br:only-child) {
+  min-height: 1.6em;
+}
+
+.journal-editor-content ol {
+  list-style-type: decimal;
+  list-style-position: outside;
+  padding-left: 1.75rem;
+  margin: 0;
+}
+
+.journal-editor-content ul {
+  list-style-type: disc;
+  list-style-position: outside;
+  padding-left: 1.75rem;
+  margin: 0;
+}
+
+.journal-editor-content li p {
+  margin: 0.15rem 0;
+}

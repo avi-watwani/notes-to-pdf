@@ -1,13 +1,16 @@
 'use client';
 
-import { jsPDF } from 'jspdf';
-import html2canvas from 'html2canvas';
-import { format } from 'date-fns';
+import { format, subDays } from 'date-fns';
 import { useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { signOut as firebaseSignOut } from 'firebase/auth';
 import { useAuth } from '@/app/components/AuthProvider';
+import {
+  JournalEditor,
+  type JournalEditorHandle,
+} from '@/app/components/JournalEditor';
 import { getFirebaseAuth } from '@/lib/firebase/client';
+import { generateJournalPdfBlob } from '@/lib/journalPdf';
 import Link from 'next/link';
 import {
   appButtonDanger,
@@ -21,12 +24,13 @@ export default function Home() {
 
   const [isLoading, setIsLoading] = useState(false);
   const [currentDate, setCurrentDate] = useState('');
-  const [textContent, setTextContent] = useState('');
+  const [editorHtml, setEditorHtml] = useState('');
   const [statusMessage, setStatusMessage] = useState('');
   const [navMenuOpen, setNavMenuOpen] = useState(false);
+  const journalEditorRef = useRef<JournalEditorHandle>(null);
 
   useEffect(() => {
-    const formattedDate = format(new Date(), 'dd MMMM yyyy');
+    const formattedDate = format(subDays(new Date(), 1), 'dd MMMM yyyy');
     setCurrentDate(formattedDate);
   }, []);
 
@@ -46,81 +50,10 @@ export default function Home() {
     }
   }, [loading, user, router]);
 
-  const generatePdfBlob = async (text: string): Promise<Blob> => {
-    // Create a temporary div to render text with proper emoji support
-    const tempDiv = document.createElement('div');
-    tempDiv.style.position = 'absolute';
-    tempDiv.style.left = '-9999px';
-    tempDiv.style.top = '0';
-    tempDiv.style.width = '720px'; // Width for PDF content (roughly 190mm at 96dpi)
-    tempDiv.style.padding = '40px';
-    tempDiv.style.fontFamily = 'Arial, sans-serif';
-    tempDiv.style.fontSize = '14px';
-    tempDiv.style.lineHeight = '1.6';
-    tempDiv.style.color = '#000000';
-    tempDiv.style.backgroundColor = '#ffffff';
-    tempDiv.style.whiteSpace = 'pre-wrap';
-    tempDiv.style.wordWrap = 'break-word';
-    tempDiv.textContent = text;
-    
-    document.body.appendChild(tempDiv);
-
-    try {
-      // Render the div to canvas with proper emoji support
-      const canvas = await html2canvas(tempDiv, {
-        useCORS: true,
-        logging: false,
-        width: tempDiv.scrollWidth,
-        height: tempDiv.scrollHeight,
-      });
-
-      // Create PDF
-      const doc = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4',
-      });
-
-      // Use JPEG for smaller file size (quality: 0.85 is a good balance)
-      const imgData = canvas.toDataURL('image/jpeg', 0.85);
-      const pdfWidth = doc.internal.pageSize.getWidth();
-      const pdfHeight = doc.internal.pageSize.getHeight();
-      
-      // Calculate image dimensions
-      const imgWidth = pdfWidth;
-      const imgHeight = (canvas.height * pdfWidth) / canvas.width;
-
-      // If content fits on one page
-      if (imgHeight <= pdfHeight) {
-        doc.addImage(imgData, 'JPEG', 0, 0, imgWidth, imgHeight);
-      } else {
-        // Split content across multiple pages
-        let heightLeft = imgHeight;
-        let position = 0;
-        
-        // Add first page
-        doc.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-        heightLeft -= pdfHeight;
-
-        // Add subsequent pages
-        while (heightLeft > 0) {
-          position = -pdfHeight * (Math.floor((imgHeight - heightLeft) / pdfHeight) + 1);
-          doc.addPage();
-          doc.addImage(imgData, 'JPEG', 0, position, imgWidth, imgHeight);
-          heightLeft -= pdfHeight;
-        }
-      }
-
-      return doc.output('blob');
-    } finally {
-      // Clean up: remove temporary div
-      document.body.removeChild(tempDiv);
-    }
-  };
-
   const handleSave = async () => {
-    if (!textContent.trim()) {
-      setStatusMessage('Text area is empty.');
+    const plain = journalEditorRef.current?.getText() ?? '';
+    if (!plain) {
+      setStatusMessage('Journal is empty.');
       return;
     }
     if (!/^\d{2} [A-Za-z]+ \d{4}$/.test(currentDate)) {
@@ -135,7 +68,7 @@ export default function Home() {
     setStatusMessage('Generating PDF...');
 
     try {
-      const pdfBlob = await generatePdfBlob(`\n${currentDate}\n\n${textContent}`);
+      const pdfBlob = await generateJournalPdfBlob(currentDate, editorHtml);
       setStatusMessage('Uploading PDF...');
 
       const idToken = await user.getIdToken();
@@ -160,7 +93,7 @@ export default function Home() {
       }
 
       setStatusMessage("Successfully added the entry!");
-      setTextContent('');
+      setEditorHtml('');
 
     } catch (error: unknown) {
       console.error('Save Error:', error);
@@ -292,11 +225,10 @@ export default function Home() {
         </div>
       </div>
 
-      <textarea
-        value={textContent}
-        placeholder="Enter your text here..."
-        onChange={(e) => setTextContent(e.target.value)}
-        className="min-h-[40vh] w-full flex-1 resize-none rounded-xl border-0 bg-white p-3 text-base text-neutral-900 shadow-sm ring-1 ring-neutral-200/80 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-[#10214d]/20 sm:min-h-[50vh] sm:p-4 sm:text-lg"
+      <JournalEditor
+        ref={journalEditorRef}
+        value={editorHtml}
+        onChange={setEditorHtml}
       />
 
       <div className="mt-3 flex flex-col gap-2 sm:mt-4 sm:flex-row sm:items-center sm:gap-4">
